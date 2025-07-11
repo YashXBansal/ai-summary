@@ -1,11 +1,19 @@
-import { Button } from "@/components/ui/button";
-import React from "react";
-
+import BgGradient from "@/components/common/bg-gradient";
+import DemoSection from "@/components/home/demoSection";
+import HeroSection from "@/components/home/heroSection";
+import HowItWorksSection from "@/components/home/how-it-works";
 function page() {
   return (
-    <div>
-      <div className="text-center mt-40 ">Home Page</div>
-      <Button variant={"outline"}> this is Button</Button>
+    <div className="relative w-full ">
+      <BgGradient>
+        <div className="flex flex-col">
+          <HeroSection />
+          <DemoSection />
+          <HowItWorksSection />
+        </div>
+      </BgGradient>
+      {/* <PricingSection /> */}
+      {/* <CTASection /> */}
     </div>
   );
 }
