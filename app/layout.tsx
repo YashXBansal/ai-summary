@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/common/header";
 import Footer from "@/components/common/footer";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -34,6 +35,20 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
+          <Toaster
+            position="top-center"
+            richColors // Enables colored toasts
+            toastOptions={{
+              className:
+                "border border-gray-200 shadow-md text-gray-900 dark:text-white",
+              style: {
+                backgroundColor: "#fef3c7", // Light yellow
+                color: "#1f2937", // Gray-900
+                borderRadius: "8px",
+                fontSize: "14px",
+              },
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>
