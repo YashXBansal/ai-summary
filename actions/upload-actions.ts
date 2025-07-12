@@ -1,7 +1,7 @@
 "use server";
 
+import { generateSummaryFromGemini } from "@/lib/geminiai";
 import { fetchAndExtractPdfText } from "@/lib/langchain";
-import { generateSummaryFromOpenAI } from "@/lib/openai";
 
 export async function generatePdfSummary(
   uploadResponse: [
@@ -34,44 +34,41 @@ export async function generatePdfSummary(
   if (!pdfUrl) {
     return {
       success: false,
-      message: "File Upload Failed.",
+      message: "File URL missing.",
       data: null,
     };
   }
 
   try {
+    // 1. Extract text from PDF
     const pdfText = await fetchAndExtractPdfText(pdfUrl);
-    console.log(pdfText);
-    let summary;
-    try {
-      summary = await generateSummaryFromOpenAI(pdfText);
-      console.log({ summary });
-    } catch (error) {
-      console.error("Error generating summary:", error);
-      // try gemini
-    }
+    console.log("📝 Extracted PDF Text (Preview):", pdfText.slice(0, 300));
+
+    // 2. Generate summary from Gemini
+    const summary = await generateSummaryFromGemini(pdfText);
+    console.log("📄 Gemini Summary Output:", summary); // 🔥 Ensure this prints
+
     if (!summary) {
       return {
         success: false,
-        message: "Failed to generate summary.",
+        message: "Summary generation failed.",
         data: null,
       };
     }
 
     return {
       success: true,
-      message: "Summary generated successfully.",
+      message: "Summary generated successfully using Gemini.",
       data: {
         summary,
       },
     };
   } catch (err) {
-    if (!uploadResponse) {
-      return {
-        success: false,
-        message: "File Upload Failed.",
-        data: null,
-      };
-    }
+    console.error("❌ Gemini Summary Error:", err);
+    return {
+      success: false,
+      message: "Unexpected error occurred while generating summary.",
+      data: null,
+    };
   }
 }
