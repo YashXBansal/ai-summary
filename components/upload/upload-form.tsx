@@ -3,6 +3,7 @@ import { useUploadThing } from "@/utils/uploadthing";
 import UploadFormInput from "./upload-form-input";
 import { z } from "zod";
 import { toast } from "sonner";
+import { generatePdfSummary } from "@/actions/upload-actions";
 
 // Zod schema for validating uploaded file
 const schema = z.object({
@@ -67,6 +68,14 @@ export default function UploadForm() {
       });
       return;
     }
+
+    toast("📤 Upload processing", {
+      description: `Processing File...`,
+    });
+
+    // Parse the pdf using langchain
+    const summary = await generatePdfSummary(resp);
+    console.log("PDF Summary:", summary);
 
     // ✅ Everything else after this is already handled in callbacks
   };
