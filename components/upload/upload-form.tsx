@@ -37,7 +37,7 @@ export default function UploadForm() {
         description: err.message || "An unexpected error occurred.",
       });
     },
-    onUploadBegin: ({ file }) => {
+    onUploadBegin: ({  }) => {
       toast("📤 Upload Started", {
         description: `Uploading File...`,
       });
@@ -91,7 +91,7 @@ export default function UploadForm() {
           });
         }
         toast.success("✨ Summary Generated", {
-          description: "Your PDF has been successfully summerized and saved.",
+          description: "Your PDF has been successfully summarized and saved.",
         });
         formRef.current?.reset();
         router.push(`/summaries/${storeResult.id}`);

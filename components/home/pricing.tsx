@@ -11,7 +11,7 @@ export default function PricingSection() {
       title: "Basic",
       price: "Free",
       features: [
-        "Summarize up to 5 PDFs/month",
+        "Summarize up to 5 PDFs",
         "Basic AI summary quality",
         "Access via dashboard",
       ],
