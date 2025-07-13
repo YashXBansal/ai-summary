@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://ai-summary-azure.vercel.app/
+
+# Sitemaps
+Sitemap: https://ai-summary-azure.vercel.app/sitemap.xml
