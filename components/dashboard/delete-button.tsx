@@ -11,14 +11,35 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useState, useTransition } from "react";
+import { deleteSummaryAction } from "@/actions/summary-actions";
+import { toast } from "sonner";
 
-export default function DeleteButton({
-  onConfirm,
-}: {
-  onConfirm?: () => void;
-}) {
+interface deleteButtonProps {
+  summaryId: string;
+}
+
+export default function DeleteButton({ summaryId }: deleteButtonProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = async () => {
+    startTransition(async () => {
+      const result = await deleteSummaryAction({ summaryId });
+      if (!result.success) {
+        toast.error("❌ Summary Not Deleted", {
+          description: "Error while deleting this summary",
+        });
+      }
+      setIsOpen(false);
+      toast.success("💫 Summary Got Deleted", {
+        description: "Successfully deleted this summary",
+      });
+    });
+  };
+
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
           size="lg"
@@ -42,8 +63,8 @@ export default function DeleteButton({
           <DialogTrigger asChild>
             <Button variant="outline">Cancel</Button>
           </DialogTrigger>
-          <Button variant="destructive" onClick={onConfirm}>
-            Delete
+          <Button variant="destructive" onClick={handleDelete}>
+            {isPending ? "Deleting..." : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

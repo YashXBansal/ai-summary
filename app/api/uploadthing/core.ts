@@ -20,7 +20,10 @@ export const ourFileRouter = {
       // ✅ Return only JSON-safe data
       return {
         userId: metadata.userId,
-        file
+        file: {
+          name: file.name,
+          url: file.ufsUrl,
+        },
       };
     }),
 } satisfies FileRouter;

@@ -56,7 +56,7 @@ export default function SummaryCard({ summary }: { summary: any }) {
           createdAt={summary.created_at}
         />
         <div className="shrink-0 -mt-1 ml-2">
-          <DeleteButton />
+          <DeleteButton summaryId={summary.id} />
         </div>
       </div>
 

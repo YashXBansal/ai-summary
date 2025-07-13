@@ -11,6 +11,7 @@ import {
 } from "@clerk/nextjs";
 import { Button } from "../ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
+import { DialogTitle } from "@/components/ui/dialog";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -93,6 +94,8 @@ export default function Header() {
               side="right"
               className="w-full max-w-xs px-4 py-6 space-y-6 dark:bg-gray-950 sm:px-6"
             >
+              {/* ✅ Hidden DialogTitle for accessibility */}
+              <DialogTitle className="sr-only">Mobile Menu</DialogTitle>
               <div className="flex flex-col gap-6 text-sm text-gray-800 dark:text-gray-200">
                 {/* Avatar & Info Section */}
                 {isSignedIn && (
