@@ -1,8 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧠 AI PDF Summarizer
 
-## Getting Started
+A modern, beautifully designed web app that lets you **upload PDF documents**, generate **AI-powered summaries**, and view them in a clean, shareable format.  
+Built with the latest **Next.js App Router**, **Tailwind CSS**, **shadcn/ui**, and **Clerk** for authentication.
 
-First, run the development server:
+> ⚡ Optimized for desktop & mobile. Includes Web Share support and clipboard fallback!
+
+---
+
+## ✨ Features
+
+- 📄 Upload PDF documents
+- 🤖 AI-based summary generation (Gemini/OpenAI/LangChain)
+- 🖋️ Beautifully rendered summaries with Markdown & syntax highlighting
+- 📤 Share summary via Web Share API or copy to clipboard
+- 🧮 Word count of the summarized text
+- 🔗 Link to view original uploaded PDF
+- 🔐 Clerk-powered authentication (sign-in/out)
+- 🧩 Modular component-based architecture
+- 🌙 Light/dark mode support
+
+---
+
+## 🛠 Tech Stack
+
+| Category       | Tools                                                                       |
+| -------------- | --------------------------------------------------------------------------- |
+| Framework      | [Next.js 15](https://nextjs.org) (App Router)                               |
+| Styling        | [Tailwind CSS](https://tailwindcss.com), [shadcn/ui](https://ui.shadcn.dev) |
+| Authentication | [Clerk.dev](https://clerk.dev)                                              |
+| Markdown       | `react-markdown` + `rehype-highlight`                                       |
+| Icons          | [`lucide-react`](https://lucide.dev)                                        |
+| Hosting        | [Vercel](https://vercel.com)                                                |
+| AI Integration | Gemini / OpenAI / LangChain                                                 |
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the repo
+
+````bash
+git clone https://github.com/YOUR_USERNAME/ai-pdf-summarizer.git
+cd ai-pdf-summarizer
+````
+
+### 2. Install dependencies
+````bash
+npm install
+# or
+yarn
+# or
+pnpm install
+````
+
+### 3. Configure environment variables
+
+# Clerk Authentication
+````bash
+CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key 
+`````
+
+# AI Provider Key (Gemini or OpenAI)
+````bash
+AI_API_KEY=your_gemini_or_openai_key
+````
+
+# UploadThing Configuration (for handling file uploads)
+````bash
+UPLOADTHING_SECRET=your_uploadthing_secret
+UPLOADTHING_APP_ID=your_uploadthing_app_id
+````
+
+### 4. Run the App
 
 ```bash
 npm run dev
@@ -10,27 +80,4 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
