@@ -6,3 +6,14 @@ export async function getSummaries(userId: string) {
     await sql`SELECT * from pdf_summaries where user_id = ${userId} ORDER BY created_at DESC`;
   return summaries;
 }
+
+export async function getSummaryById(id: string) {
+  try {
+    const sql = await getDbConnection();
+    const [summary] = await sql`SELECT * FROM pdf_summaries WHERE id = ${id}`;
+    return summary;
+  } catch (error) {
+    console.log("Error fetching summary by id", error);
+    return null;
+  }
+}

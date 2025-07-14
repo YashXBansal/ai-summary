@@ -4,6 +4,7 @@ import { FileText } from "lucide-react";
 import { cn, formatFileName } from "@/lib/utils";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import ReactMarkdown from "react-markdown";
 
 // ✅ Status Badge
 const StatusBadge = ({ status }: { status: string }) => (
@@ -13,8 +14,8 @@ const StatusBadge = ({ status }: { status: string }) => (
       status === "completed"
         ? "bg-green-100 text-green-700"
         : status === "processing"
-        ? "bg-yellow-100 text-yellow-700"
-        : "bg-red-100 text-red-700"
+          ? "bg-yellow-100 text-yellow-700"
+          : "bg-red-100 text-red-700"
     )}
   >
     {status}
@@ -64,9 +65,9 @@ export default function SummaryCard({ summary }: { summary: any }) {
       <Link href={`/summaries/${summary.id}`} className="block p-4 sm:p-6 pt-3">
         <div className="flex flex-col gap-3 sm:gap-4 h-full">
           {/* Summary Preview */}
-          <p className="text-gray-600 text-sm sm:text-[15px] leading-relaxed line-clamp-4 pl-1">
-            {summary.summary_text}
-          </p>
+          <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300 line-clamp-4">
+            <ReactMarkdown>{summary.summary_text}</ReactMarkdown>
+          </div>
 
           {/* Status */}
           <div className="mt-4 flex justify-between items-center">
