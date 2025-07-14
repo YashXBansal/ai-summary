@@ -7,40 +7,43 @@ export default function BgGradient({
   children?: React.ReactNode;
   classname?: string;
 }) {
-  // Default color classes if none provided
   const defaultPolygonColor1 = "bg-cyan-200/20 dark:bg-cyan-800/20";
   const defaultPolygonColor2 = "bg-pink-200/20 dark:bg-pink-800/20";
 
   return (
-    <div className="relative w-full overflow-hidden">
-      {/* Main static background gradient */}
+    <div className="relative w-full min-h-screen overflow-hidden isolate">
+      {/* Background Gradient Layer */}
       <div
         className="absolute inset-0 -z-20 bg-gradient-to-br from-cyan-50 via-white to-slate-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900"
         aria-hidden="true"
       />
 
-      {/* Polygon Shape 1 - Apply custom classname if provided */}
+      {/* Decorative Polygon Shape 1 */}
       <div
         className={clsx(
-          "absolute -top-48 -left-32 w-[500px] h-[500px] rounded-[30%] blur-[100px] -z-10",
-          classname ? classname : defaultPolygonColor1
+          "absolute -top-48 -left-32 w-[500px] h-[500px] rounded-[30%] blur-[100px] -z-10 opacity-80",
+          classname ?? defaultPolygonColor1
         )}
-        style={{ clipPath: "polygon(50% 0%, 100% 38%, 82% 100%, 0% 100%)" }}
+        style={{
+          clipPath: "polygon(50% 0%, 100% 38%, 82% 100%, 0% 100%)",
+        }}
         aria-hidden="true"
       />
 
-      {/* Polygon Shape 2 - Slight variation with same logic */}
+      {/* Decorative Polygon Shape 2 */}
       <div
         className={clsx(
-          "absolute top-64 right-[-150px] w-[400px] h-[400px] rounded-[40%] blur-[100px] -z-10",
-          classname ? classname : defaultPolygonColor2
+          "absolute top-64 -right-36 w-[400px] h-[400px] rounded-[40%] blur-[100px] -z-10 opacity-80",
+          classname ?? defaultPolygonColor2
         )}
-        style={{ clipPath: "polygon(0 0, 100% 20%, 80% 100%, 0% 80%)" }}
+        style={{
+          clipPath: "polygon(0 0, 100% 20%, 80% 100%, 0% 80%)",
+        }}
         aria-hidden="true"
       />
 
       {/* Page Content */}
-      {children}
+      <div className="relative z-10">{children}</div>
     </div>
   );
 }
