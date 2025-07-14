@@ -47,7 +47,7 @@ export function SummaryPage({ summary }: SummaryPageProps) {
 
   return (
     <>
-      <div className="max-w-4xl mx-auto px-4 py-2">
+      <div className=" lg:max-w-7xl mx-auto px-4 py-2">
         {/* AI Summary Badge */}
         <div className="mb-10 flex flex-col items-center text-center gap-2">
           <div className="flex items-center gap-2 animate-fade-in-up">
