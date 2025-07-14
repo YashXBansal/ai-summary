@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import Link from "next/link";
 import { ArrowLeft, Share2 } from "lucide-react";
-
+import removeMarkdown from "remove-markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,7 @@ interface SummaryPageProps {
   };
 }
 
-export function SummaryPage({ summary  }: SummaryPageProps) {
+export function SummaryPage({ summary }: SummaryPageProps) {
   const handleShare = async () => {
     const shareText = `📄 Summary: ${summary.title}\n\n${summary.summary_text}`;
 
@@ -44,9 +44,10 @@ export function SummaryPage({ summary  }: SummaryPageProps) {
   };
 
   function countWords(text: string): number {
-    return text.trim().split(/\s+/).length;
+    const plainText = removeMarkdown(text || "");
+    return plainText.trim().split(/\s+/).length;
   }
-
+  const wordCount = countWords(summary.summary_text);
   return (
     <div className="max-w-4xl mx-auto backdrop-blur-xl border border-white/20 rounded-3xl bg-white/60 dark:bg-black/40 shadow-2xl p-8 md:p-12">
       {/* Back */}
@@ -65,8 +66,11 @@ export function SummaryPage({ summary  }: SummaryPageProps) {
             {summary.title}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Uploaded {formatDistanceToNow(new Date(summary.created_at), { addSuffix: true })} ·{" "}
-            <span className="font-semibold">{summary.file_name}</span>
+            Uploaded{" "}
+            {formatDistanceToNow(new Date(summary.created_at), {
+              addSuffix: true,
+            })}{" "}
+            · <span className="font-semibold">{summary.file_name}</span>
           </p>
           {summary.original_file_url && (
             <Link
@@ -79,7 +83,7 @@ export function SummaryPage({ summary  }: SummaryPageProps) {
             </Link>
           )}
           <p className="text-sm text-muted-foreground mt-1">
-            📝 Word Count: <span className="font-semibold">{countWords(summary.summary_text)}</span>
+            📝 Word Count: <span className="font-semibold">{wordCount}</span>
           </p>
         </div>
 
