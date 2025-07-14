@@ -30,6 +30,7 @@
     "highlight.js": "^11.11.1",
     "html2pdf.js": "^0.10.3",
     "lucide-react": "^0.485.0",
+    "marked": "^16.0.0",
     "motion": "^12.23.3",
     "next": "15.2.4",
     "next-sitemap": "^4.2.3",

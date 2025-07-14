@@ -6,13 +6,14 @@ import { formatDistanceToNow } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import removeMarkdown from "remove-markdown";
-
+import { Download } from "lucide-react";
 import { ArrowLeft, Share2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import BgGradient from "@/components/common/bg-gradient";
+import DownloadSummaryButton from "@/components/dashboard/download-summary-button";
 
 interface SummaryPageProps {
   summary: {
@@ -29,6 +30,8 @@ export function SummaryPage({ summary }: SummaryPageProps) {
   const wordCount = removeMarkdown(summary.summary_text || "")
     .trim()
     .split(/\s+/).length;
+
+  const readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 150));
 
   const handleShare = async () => {
     const shareText = `📄 Summary: ${summary.title}\n\n${summary.summary_text}`;
@@ -94,19 +97,33 @@ export function SummaryPage({ summary }: SummaryPageProps) {
                 </p>
 
                 {summary.original_file_url && (
-                  <Link
-                    href={summary.original_file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-2 text-sm text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
-                  >
-                    📄 View Original PDF
-                  </Link>
+                  <div className="flex flex-wrap items-center gap-3 mt-3">
+                    <Link
+                      href={summary.original_file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+                    >
+                      📄 View Original PDF
+                    </Link>
+
+                    <DownloadSummaryButton
+                      title={summary.title}
+                      summaryText={summary.summary_text}
+                      file_name={summary.file_name}
+                      createdAt={summary.created_at}
+                    />
+                  </div>
                 )}
 
                 <p className="text-sm text-muted-foreground mt-1">
                   📝 Word Count:{" "}
                   <span className="font-semibold">{wordCount}</span>
+                  {" · "}
+                  ⏱️ {""}
+                  <span className="font-semibold">
+                    {readingTimeMinutes} mins read
+                  </span>
                 </p>
               </div>
 
@@ -142,6 +159,7 @@ export function SummaryPage({ summary }: SummaryPageProps) {
 
             {/* Markdown Summary */}
             <article
+              id="summary-content"
               className={cn(
                 "prose dark:prose-invert max-w-none",
                 "prose-p:text-[1.05rem] prose-p:leading-relaxed",
