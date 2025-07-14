@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FileText, Upload, Menu } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useUser,
   UserButton,
@@ -12,10 +12,24 @@ import {
 import { Button } from "../ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { DialogTitle } from "@/components/ui/dialog";
+import { fetchProStatus } from "@/lib/check-user-pro/check-pro"; // ✅ import shared function
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
+  const [isPro, setIsPro] = useState(false);
+
+  const email = user?.emailAddresses?.[0]?.emailAddress;
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!email) return;
+      const pro = await fetchProStatus(email);
+      setIsPro(pro);
+    };
+
+    checkStatus();
+  }, [email]);
 
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
     <>
@@ -67,9 +81,11 @@ export default function Header() {
 
           {isSignedIn ? (
             <>
-              <div className="text-xs px-2 py-1 bg-yellow-200 text-yellow-800 rounded-md font-medium">
-                PRO
-              </div>
+              {isPro && (
+                <div className="text-xs px-2 py-1 bg-yellow-200 text-yellow-800 rounded-md font-medium">
+                  PRO
+                </div>
+              )}
               <UserButton afterSignOutUrl="/" />
             </>
           ) : (
@@ -94,7 +110,6 @@ export default function Header() {
               side="right"
               className="w-full max-w-xs px-4 py-6 space-y-6 dark:bg-gray-950 sm:px-6"
             >
-              {/* ✅ Hidden DialogTitle for accessibility */}
               <DialogTitle className="sr-only">Mobile Menu</DialogTitle>
               <div className="flex flex-col gap-6 text-sm text-gray-800 dark:text-gray-200">
                 {/* Avatar & Info Section */}
@@ -102,19 +117,17 @@ export default function Header() {
                   <div className="flex items-center gap-3">
                     <UserButton
                       afterSignOutUrl="/"
-                      appearance={{
-                        elements: {
-                          avatarBox: "w-9 h-9",
-                        },
-                      }}
+                      appearance={{ elements: { avatarBox: "w-9 h-9" } }}
                     />
                     <div className="flex flex-col">
                       <span className="font-medium text-base leading-tight dark:text-white">
                         Welcome
                       </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        PRO User
-                      </span>
+                      {isPro && (
+                        <span className="text-xs text-yellow-500 font-medium">
+                          PRO User
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
@@ -132,7 +145,7 @@ export default function Header() {
                         size="sm"
                         variant="outline"
                         className="w-full text-sm py-2"
-                        onClick={() => setMenuOpen(false)} // manually close sheet
+                        onClick={() => setMenuOpen(false)}
                       >
                         Sign Out
                       </Button>
@@ -153,7 +166,7 @@ export default function Header() {
             </SheetContent>
           </Sheet>
 
-          {isSignedIn && (
+          {isSignedIn && isPro && (
             <div className="text-xs px-2 py-1 bg-yellow-200 text-yellow-800 rounded-md font-medium">
               PRO
             </div>

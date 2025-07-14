@@ -67,6 +67,12 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          <script
+            src="https://checkout.razorpay.com/v1/checkout.js"
+            async
+          ></script>
+        </head>
         <body className={`${inter.variable} ${firaCode.variable} antialiased`}>
           <div className="relative min-h-screen flex flex-col">
             <Suspense fallback={<div className="h-16" />}>
