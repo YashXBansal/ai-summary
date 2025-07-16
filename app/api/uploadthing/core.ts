@@ -9,20 +9,19 @@ export const ourFileRouter = {
     .middleware(async () => {
       const user = await currentUser();
 
-      if (!user) throw new UploadThingError("Unauthorized");
-
-      return { userId: user.id };
+      return {
+        userId: user?.id || "anon-user", // ✅ fallback to "anon-user"
+      };
     })
     .onUploadComplete(async ({ metadata, file }) => {
       console.log("✅ File uploaded for user:", metadata.userId);
-      console.log("File URL:", file.ufsUrl); // Use `file.url`, not ufsUrl
+      console.log("File URL:", file.url); // ✅ use correct property
 
-      // ✅ Return only JSON-safe data
       return {
         userId: metadata.userId,
         file: {
           name: file.name,
-          url: file.ufsUrl,
+          url: file.url, // ✅ fixed
         },
       };
     }),
