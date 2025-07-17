@@ -10,6 +10,7 @@ import EmptySummaryState from "@/components/dashboard/empty-summary-state";
 import { migrateAnonSummaryToUser } from "@/lib/migrateAnonSummaryToUser";
 import { getUploadStatus } from "@/actions/upload-actions";
 import ClearAnonCookieClient from "@/components/dashboard/ClearAnonCookieClient";
+import MigrateFromClient from "@/components/dashboard/migrateFromClient";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -24,6 +25,7 @@ export default async function DashboardPage() {
 
   return (
     <>
+      <MigrateFromClient userId={user.id} />
       <ClearAnonCookieClient />
       <BgGradient classname="bg-indigo-200/20 dark:bg-indigo-800/20">
         <main className="min-h-screen pt-8 sm:pt-12">

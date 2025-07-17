@@ -1,4 +1,6 @@
-// lib//check-pro-user/check-user
+// "use server";
+
+import { getDbConnection } from "@/lib/db";
 
 export async function fetchProStatus(email: string): Promise<boolean> {
   if (!email) return false;

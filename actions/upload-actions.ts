@@ -7,6 +7,8 @@ import { formatFileNameAsTitle } from "@/utils/format-utils";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { trackAnonSummaryInCookie } from "@/lib/trackSummaryUpload";
+import { getOrSetAnonId } from "@/utils/setAnonCookie";
 
 interface PdfSummaryType {
   fileUrl: string;
@@ -101,20 +103,28 @@ async function savePdfSummary({
 }) {
   try {
     const sql = await getDbConnection();
-    const [savedSummary] = await sql`INSERT INTO pdf_summaries (
-      user_id,
-      original_file_url,
-      summary_text,
-      title,
-      file_name
-    )
-    VALUES (
-      ${userId},
-      ${fileUrl},
-      ${summary},
-      ${title},
-      ${fileName}
-    ) RETURNING id, summary_text;`;
+    const cookieStore = await cookies();
+    const anonId = cookieStore.get("anon_summary_id")?.value;
+
+    const [savedSummary] = await sql`
+      INSERT INTO pdf_summaries (
+        user_id,
+        anon_summary_id,
+        original_file_url,
+        summary_text,
+        title,
+        file_name
+      )
+      VALUES (
+        ${userId},
+        ${anonId ?? null},
+        ${fileUrl},
+        ${summary},
+        ${title},
+        ${fileName}
+      ) RETURNING id, summary_text;
+    `;
+
     return savedSummary;
   } catch (error) {
     console.error("Error saving PDF summary:", error);
@@ -130,12 +140,27 @@ export async function getUploadStatus() {
   const user = await currentUser();
 
   if (!user) {
-    // Anonymous user logic
+    const cookieStore = await cookies(); // ✅ no need for await
+    const anonId = cookieStore.get("anon_summary_id")?.value;
+
+    // ❗ Allow only if cookie exists and count < 1
+    if (!anonId) {
+      // Treat this as first-ever anon upload from this browser
+      return {
+        allowed: true,
+        reason: null,
+        isPro: false,
+        isAnonymous: true,
+        remaining: 1,
+      };
+    }
+
+    // Check how many uploads exist for this anon ID
     const anonCount = (
       await sql`
         SELECT COUNT(*)::int
         FROM pdf_summaries
-        WHERE user_id = 'anon-user' AND is_deleted = false;
+        WHERE anon_summary_id = ${anonId} AND is_deleted = false;
       `
     )[0].count;
 
@@ -148,6 +173,7 @@ export async function getUploadStatus() {
     };
   }
 
+  // 🧑‍💼 Logged-in logic
   const email = user.emailAddresses?.[0]?.emailAddress;
   const dbUser = (
     await sql`SELECT status FROM users WHERE email = ${email};`
@@ -164,7 +190,6 @@ export async function getUploadStatus() {
     };
   }
 
-  // ✅ Count all summaries under this user, including migrated ones
   const uploadsCount = (
     await sql`
       SELECT COUNT(*)::int
@@ -189,69 +214,56 @@ export async function storePdfSummaryAction({
   fileName,
 }: PdfSummaryType) {
   const { userId: authUserId } = await auth();
-  const resolvedUserId = authUserId || "anon-user";
+  const cookieStore = await cookies();
+  const sql = await getDbConnection();
 
-  try {
-    const sql = await getDbConnection();
-    const uploadStatus = await getUploadStatus();
+  const anonId = cookieStore.get("anon_summary_id")?.value;
+  const summaryId = await getOrSetAnonId();
+  const anonUserId = `anon-${summaryId}`;
 
-    if (!uploadStatus.allowed) {
-      return {
-        success: false,
-        message:
-          uploadStatus.reason === "anonymous_limit_reached"
-            ? "You’ve already used your free anonymous summary. Please sign in to get more."
-            : "You’ve used all your free summaries. Please upgrade to Pro.",
-        data: null,
-      };
-    }
+  const resolvedUserId = authUserId || anonUserId;
 
-    // ✅ Check if anonymous summary exists in cookie and link to new user if logged in
-    const cookieStore = await cookies();
-    const anonSummaryId = cookieStore.get("anon_summary_id")?.value;
+  // ✅ Upload limit logic centralized
+  const uploadStatus = await getUploadStatus();
 
-    if (authUserId && anonSummaryId) {
-      await sql`
-        UPDATE pdf_summaries
-        SET user_id = ${authUserId}
-        WHERE id = ${anonSummaryId} AND user_id = 'anon-user';
-      `;
-      cookieStore.delete("anon_summary_id");
-      console.log("🔄 Linked anonymous summary to logged-in user");
-    }
-
-    const savedSummary = await savePdfSummary({
-      userId: resolvedUserId,
-      fileUrl,
-      summary,
-      title,
-      fileName,
-    });
-
-    if (!savedSummary) {
-      return {
-        success: false,
-        message: "Failed to save PDF summary. Please try again.",
-        data: null,
-      };
-    }
-
-    revalidatePath(`/summaries/${savedSummary.id}`);
-
-    return {
-      success: true,
-      message: "PDF summary stored successfully.",
-      data: {
-        id: savedSummary.id,
-        isAnonymous: resolvedUserId === "anon-user",
-      },
-    };
-  } catch (error) {
-    console.error("❌ Error storing PDF summary:", error);
-    return {
-      success: false,
-      message: "Unexpected error while saving summary.",
-      data: null,
-    };
+  if (!uploadStatus.allowed) {
+    throw new Error(uploadStatus.reason || "Upload limit exceeded");
   }
+
+  // ✅ Migrate anon to signed-in user (if just logged in)
+  if (authUserId && summaryId) {
+    await sql`
+      UPDATE pdf_summaries 
+    SET user_id = ${authUserId}
+    WHERE user_id = ${anonUserId}
+      AND is_deleted = false;
+    `;
+    cookieStore.delete("anon_summary_id");
+    console.log("🔄 Migrated anonymous summary to logged-in user");
+  }
+
+  // ✅ Save the summary
+  const saved = await savePdfSummary({
+    userId: resolvedUserId,
+    fileUrl,
+    summary,
+    title,
+    fileName,
+  });
+
+  // ✅ Track anon summary ID in cookie (if anon)
+  if (resolvedUserId === "anon-user") {
+    await trackAnonSummaryInCookie(saved.id);
+  }
+
+  revalidatePath(`/summaries/${saved.id}`);
+
+  return {
+    success: true,
+    message: "Summary saved successfully.",
+    data: {
+      id: saved.id,
+      isAnonymous: resolvedUserId === "anon-user",
+    },
+  };
 }
