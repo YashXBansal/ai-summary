@@ -1,5 +1,4 @@
 // lib/migrateAnonSummaryToUser.ts
-
 "use server";
 
 import { cookies } from "next/headers";
@@ -7,26 +6,33 @@ import { getDbConnection } from "@/lib/db";
 
 export async function migrateAnonSummaryToUser(loggedInUserId: string) {
   const cookieStore = await cookies();
-  const anonSummaryId = cookieStore.get("anon_summary_id")?.value;
+  const anonId = cookieStore.get("anon_summary_id")?.value;
 
-  if (!anonSummaryId) return;
+  if (!anonId) return;
 
   const sql = await getDbConnection();
+  const anonUserId = `anon-${anonId}`;
 
-  // Confirm it's actually an anon-user summary
-  const [summary] = await sql`
-    SELECT * FROM pdf_summaries
-    WHERE id = ${anonSummaryId}
-    AND user_id = 'anon-user'
-    AND is_deleted = false;
+  // Fetch all summaries tied to the anon user ID
+  const summaries = await sql`
+    SELECT id FROM pdf_summaries
+    WHERE user_id = ${anonUserId}
+      AND is_deleted = false;
   `;
 
-  if (!summary) return;
+  if (summaries.length === 0) return;
 
-  // Update summary ownership to logged-in user
+  // Migrate all summaries to the logged-in user
   await sql`
     UPDATE pdf_summaries
     SET user_id = ${loggedInUserId}
-    WHERE id = ${anonSummaryId};
+    WHERE user_id = ${anonUserId}
+      AND is_deleted = false;
   `;
+
+  // // Optional: Clear the cookie after migration
+  // cookieStore.set("anon_summary_id", "", {
+  //   path: "/",
+  //   maxAge: 0,
+  // });
 }
