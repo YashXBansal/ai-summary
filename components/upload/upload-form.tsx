@@ -93,32 +93,42 @@ export default function UploadForm() {
 
       // ✅ Step 3: Start Upload
       const resp = await startUpload([file]);
-      if (!resp) {
+      if (!resp || resp.length === 0) {
         toast.error("❌ Upload Failed", {
           description: "Something went wrong while uploading your file.",
         });
         return;
       }
 
+      // 🛠️ FIX 1 & 2: Explicitly define uploadUrl and fileName
+      const uploadUrl = resp[0].url;
+      const fileName = file.name;
+
       toast("📄 Processing File...", {
         description: `Generating summary using AI...`,
       });
 
       // ✅ Step 4: Generate Summary
-      const result = await generatePdfSummary([resp[0]]);
-      const { data = null } = result || {};
+      const result = await generatePdfSummary(resp as any);
 
-      if (data?.summary) {
+      // Extract data safely
+      const data = result?.data;
+
+      // 🛠️ FIX 3: Check `data` directly to remove the "possibly null" TS error
+      if (data && data.summary) {
         toast("📦 Saving Summary", {
           description: "Saving your summarized content...",
         });
 
-        // ✅ Step 5: Save summary to DB
+        // ✅ Step 5: Save summary to DB using the safely extracted `data` object
         const storeResult = await storePdfSummaryAction({
-          summary: data.summary,
-          fileUrl: resp[0].serverData.file.url,
+          fileUrl: uploadUrl,
+          fileName: fileName,
           title: data.title,
-          fileName: file.name,
+          summary: data.summary,
+          originalText: data.originalText,
+          sentiment: data.sentiment,
+          intelligence: data.intelligence,
         });
 
         if (!storeResult?.success) {
@@ -136,7 +146,7 @@ export default function UploadForm() {
           localStorage.setItem("anon_summary_id", storeResult.data.id);
           document.cookie = `anon_summary_id=${storeResult.data.id}; path=/`;
           console.log(
-            "💾 Stored anon summary ID in cookie for linking after signup"
+            "💾 Stored anon summary ID in cookie for linking after signup",
           );
         }
 

@@ -8,15 +8,17 @@ import {
   UserButton,
   SignInButton,
   SignOutButton,
+  SignedIn,
+  SignedOut,
 } from "@clerk/nextjs";
 import { Button } from "../ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { DialogTitle } from "@/components/ui/dialog";
-import { fetchProStatus } from "@/lib/check-user-pro/check-pro"; // ✅ import shared function
+import { fetchProStatus } from "@/lib/check-user-pro/check-pro";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { isSignedIn, user } = useUser();
+  const { user, isLoaded } = useUser();
   const [isPro, setIsPro] = useState(false);
 
   const email = user?.emailAddresses?.[0]?.emailAddress;
@@ -28,8 +30,10 @@ export default function Header() {
       setIsPro(pro);
     };
 
-    checkStatus();
-  }, [email]);
+    if (isLoaded) {
+      checkStatus();
+    }
+  }, [email, isLoaded]);
 
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
     <>
@@ -41,26 +45,24 @@ export default function Header() {
         Pricing
       </Link>
 
-      {isSignedIn && (
-        <>
-          <Link
-            href="/dashboard"
-            onClick={onClick}
-            className="hover:text-indigo-600 transition"
-          >
-            Your Summaries
-          </Link>
+      <SignedIn>
+        <Link
+          href="/dashboard"
+          onClick={onClick}
+          className="hover:text-indigo-600 transition"
+        >
+          Your Summaries
+        </Link>
 
-          <Link
-            href="/upload"
-            onClick={onClick}
-            className="flex items-center gap-1 hover:text-indigo-600 transition"
-          >
-            <Upload className="w-4 h-4" />
-            Upload PDF
-          </Link>
-        </>
-      )}
+        <Link
+          href="/upload"
+          onClick={onClick}
+          className="flex items-center gap-1 hover:text-indigo-600 transition"
+        >
+          <Upload className="w-4 h-4" />
+          Upload PDF
+        </Link>
+      </SignedIn>
     </>
   );
 
@@ -79,22 +81,22 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-6 text-sm">
           <NavLinks />
 
-          {isSignedIn ? (
-            <>
-              {isPro && (
-                <div className="text-xs px-2 py-1 bg-yellow-200 text-yellow-800 rounded-md font-medium">
-                  PRO
-                </div>
-              )}
-              <UserButton afterSignOutUrl="/" />
-            </>
-          ) : (
+          <SignedIn>
+            {isPro && (
+              <div className="text-xs px-2 py-1 bg-yellow-200 text-yellow-800 rounded-md font-medium">
+                PRO
+              </div>
+            )}
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+
+          <SignedOut>
             <SignInButton mode="modal">
               <Button variant="ghost" size="sm" className="text-sm">
                 Sign In
               </Button>
             </SignInButton>
-          )}
+          </SignedOut>
         </div>
 
         {/* Mobile Nav */}
@@ -113,7 +115,7 @@ export default function Header() {
               <DialogTitle className="sr-only">Mobile Menu</DialogTitle>
               <div className="flex flex-col gap-6 text-sm text-gray-800 dark:text-gray-200">
                 {/* Avatar & Info Section */}
-                {isSignedIn && (
+                <SignedIn>
                   <div className="flex items-center gap-3">
                     <UserButton
                       afterSignOutUrl="/"
@@ -130,7 +132,7 @@ export default function Header() {
                       )}
                     </div>
                   </div>
-                )}
+                </SignedIn>
 
                 {/* Nav Links */}
                 <div className="flex flex-col gap-4 border-t border-gray-200 dark:border-gray-800 pt-4">
@@ -139,7 +141,7 @@ export default function Header() {
 
                 {/* Sign In / Out Button */}
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
-                  {isSignedIn ? (
+                  <SignedIn>
                     <SignOutButton>
                       <Button
                         size="sm"
@@ -150,7 +152,9 @@ export default function Header() {
                         Sign Out
                       </Button>
                     </SignOutButton>
-                  ) : (
+                  </SignedIn>
+
+                  <SignedOut>
                     <SignInButton mode="modal">
                       <Button
                         size="sm"
@@ -160,17 +164,19 @@ export default function Header() {
                         Sign In
                       </Button>
                     </SignInButton>
-                  )}
+                  </SignedOut>
                 </div>
               </div>
             </SheetContent>
           </Sheet>
 
-          {isSignedIn && isPro && (
-            <div className="text-xs px-2 py-1 bg-yellow-200 text-yellow-800 rounded-md font-medium">
-              PRO
-            </div>
-          )}
+          <SignedIn>
+            {isPro && (
+              <div className="text-xs px-2 py-1 bg-yellow-200 text-yellow-800 rounded-md font-medium">
+                PRO
+              </div>
+            )}
+          </SignedIn>
         </div>
       </nav>
     </header>
